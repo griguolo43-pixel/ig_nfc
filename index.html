@@ -23,43 +23,115 @@
     .btn{
       display:block;
       width:100%;
-      padding:22px;
+      padding:20px;
       border-radius:16px;
       background:#d62976;
       color:#fff;
       text-decoration:none;
-      font-size:22px;
+      font-size:20px;
       font-weight:bold;
       border:none;
       cursor:pointer;
+    }
+    .small{
+      display:inline-block;
+      margin-top:14px;
+      color:#d62976;
+      text-decoration:none;
+      font-size:14px;
     }
   </style>
 </head>
 <body>
   <div class="box">
     <button class="btn" id="openBtn">Apri Instagram</button>
+    <a class="small" id="webLink" href="https://www.instagram.com/leonardogriguolo/">Apri versione web</a>
   </div>
 
   <script>
     const username = "leonardogriguolo";
-    const trackingBase = "https://script.google.com/macros/s/AKfycbwu-yRL_H8tOoqnFNCj8tQxqZTAoj1t3vaJHF8m8IrUexL_s9-GqJwdEKQbWiVY-iQZ/exec";
-    const ua = navigator.userAgent || "";
-    const isAndroid = /Android/i.test(ua);
-    const isIOS = /iPhone|iPad|iPod/i.test(ua);
-
+    const trackingUrl = "https://script.google.com/macros/s/AKfycby0X0wtFU5-MLdht1aXyUEfrIcb_BA6bVkkXoIQA9DzKJvaxA6qG_aVldkWHLzJrQ8n/exec";
     const webUrl = "https://www.instagram.com/" + username + "/";
     const iosUrl = "instagram://user?username=" + username;
     const androidIntent = "intent://www.instagram.com/" + username + "/#Intent;package=com.instagram.android;scheme=https;end";
 
-    const trackUrl =
-      trackingBase +
-      "?src=nfc&ua=" + encodeURIComponent(ua) +
-      "&t=" + Date.now();
+    document.getElementById("webLink").href = webUrl;
 
-    const img = new Image();
-    img.src = trackUrl;
+    function detectBrowser(ua) {
+      if (/Instagram/i.test(ua)) return "Instagram In-App Browser";
+      if (/Chrome/i.test(ua) && !/Edg/i.test(ua)) return "Chrome";
+      if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) return "Safari";
+      if (/Edg/i.test(ua)) return "Edge";
+      if (/Firefox/i.test(ua)) return "Firefox";
+      return "Sconosciuto";
+    }
+
+    async function collectDeviceInfo() {
+      const ua = navigator.userAgent || "";
+      let platform = "";
+      let mobile = "";
+      let model = "";
+      const browser = detectBrowser(ua);
+
+      if (navigator.userAgentData) {
+        try {
+          const high = await navigator.userAgentData.getHighEntropyValues([
+            "platform",
+            "model",
+            "mobile"
+          ]);
+          platform = high.platform || "";
+          mobile = String(high.mobile ?? "");
+          model = high.model || "";
+        } catch (e) {}
+      }
+
+      if (!platform) {
+        if (/Android/i.test(ua)) platform = "Android";
+        else if (/iPhone|iPad|iPod/i.test(ua)) platform = "iOS";
+        else if (/Windows/i.test(ua)) platform = "Windows";
+        else if (/Mac/i.test(ua)) platform = "macOS";
+        else platform = "Sconosciuto";
+      }
+
+      if (!mobile) {
+        mobile = /Android|iPhone|iPad|iPod|Mobile/i.test(ua) ? "true" : "false";
+      }
+
+      if (!model) {
+        if (/iPhone/i.test(ua)) model = "iPhone";
+        else if (/iPad/i.test(ua)) model = "iPad";
+        else if (/Android/i.test(ua)) model = "Android Device";
+      }
+
+      return { src: "nfc", ua, browser, platform, mobile, model };
+    }
+
+    async function trackScan() {
+      const data = await collectDeviceInfo();
+      const body = JSON.stringify(data);
+
+      if (navigator.sendBeacon) {
+        const blob = new Blob([body], { type: "text/plain;charset=UTF-8" });
+        navigator.sendBeacon(trackingUrl, blob);
+        return;
+      }
+
+      fetch(trackingUrl, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=UTF-8" },
+        body,
+        keepalive: true
+      }).catch(() => {});
+    }
+
+    trackScan();
 
     document.getElementById("openBtn").addEventListener("click", function () {
+      const ua = navigator.userAgent || "";
+      const isAndroid = /Android/i.test(ua);
+      const isIOS = /iPhone|iPad|iPod/i.test(ua);
+
       if (isAndroid) {
         window.location.href = androidIntent;
         setTimeout(function () {

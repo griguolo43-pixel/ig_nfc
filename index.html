@@ -17,39 +17,32 @@
     }
     .box{
       width:100%;
-      max-width:340px;
+      max-width:360px;
       padding:24px;
     }
     .btn{
       display:block;
       width:100%;
-      padding:18px;
-      border-radius:14px;
+      padding:22px;
+      border-radius:16px;
       background:#d62976;
       color:#fff;
       text-decoration:none;
-      font-size:18px;
+      font-size:22px;
       font-weight:bold;
       border:none;
-    }
-    .small{
-      display:inline-block;
-      margin-top:14px;
-      color:#d62976;
-      text-decoration:none;
-      font-size:14px;
+      cursor:pointer;
     }
   </style>
 </head>
 <body>
   <div class="box">
     <button class="btn" id="openBtn">Apri Instagram</button>
-    <a class="small" id="webLink" href="https://www.instagram.com/leonardogriguolo/">Apri versione web</a>
   </div>
 
   <script>
     const username = "leonardogriguolo";
-    const trackingBase = "https://script.google.com/macros/s/AKfycbypTDhZFdOEPSZDjLPO81R9DAi-Zk02hnH-xjJB3eABTciO0YGl_ONBa4NU4HrKh8Yw/exec";
+    const trackingBase = "INCOLLA_QUI_LINK_APPS_SCRIPT";
     const ua = navigator.userAgent || "";
     const isAndroid = /Android/i.test(ua);
     const isIOS = /iPhone|iPad|iPod/i.test(ua);
@@ -58,21 +51,15 @@
     const iosUrl = "instagram://user?username=" + username;
     const androidIntent = "intent://www.instagram.com/" + username + "/#Intent;package=com.instagram.android;scheme=https;end";
 
-    document.getElementById("webLink").href = webUrl;
-
-    // tracking rapido
     const trackUrl =
       trackingBase +
       "?src=nfc&ua=" + encodeURIComponent(ua) +
       "&t=" + Date.now();
 
-    // uso immagine invisibile: spesso più affidabile e veloce di fetch in questo caso
     const img = new Image();
     img.src = trackUrl;
 
-    const btn = document.getElementById("openBtn");
-
-    btn.addEventListener("click", function () {
+    document.getElementById("openBtn").addEventListener("click", function () {
       if (isAndroid) {
         window.location.href = androidIntent;
         setTimeout(function () {
@@ -87,11 +74,6 @@
         window.location.href = webUrl;
       }
     });
-
-    // tentativo automatico rapido
-    setTimeout(function () {
-      btn.click();
-    }, 250);
   </script>
 </body>
 </html>

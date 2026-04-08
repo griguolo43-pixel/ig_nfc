@@ -50,99 +50,44 @@
 
   <script>
     const username = "leonardogriguolo";
-    const trackingUrl = "https://script.google.com/macros/s/AKfycby0X0wtFU5-MLdht1aXyUEfrIcb_BA6bVkkXoIQA9DzKJvaxA6qG_aVldkWHLzJrQ8n/exec";
+    const trackingUrl = "https://script.google.com/macros/s/AKfycbzn8JrSHf15pL1_ZHKCaj_PahOY1G_SKAQIB2txNzQ/dev";
+    const ua = navigator.userAgent || "";
+
+    const isAndroid = /Android/i.test(ua);
+    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+
     const webUrl = "https://www.instagram.com/" + username + "/";
-    const iosUrl = "instagram://user?username=" + username;
     const androidIntent = "intent://www.instagram.com/" + username + "/#Intent;package=com.instagram.android;scheme=https;end";
 
     document.getElementById("webLink").href = webUrl;
 
-    function detectBrowser(ua) {
-      if (/Instagram/i.test(ua)) return "Instagram In-App Browser";
-      if (/Chrome/i.test(ua) && !/Edg/i.test(ua)) return "Chrome";
-      if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) return "Safari";
-      if (/Edg/i.test(ua)) return "Edge";
-      if (/Firefox/i.test(ua)) return "Firefox";
-      return "Sconosciuto";
-    }
+    // tracking una volta sola
+    const data = {
+      src: "nfc",
+      ua: ua,
+      t: Date.now()
+    };
 
-    async function collectDeviceInfo() {
-      const ua = navigator.userAgent || "";
-      let platform = "";
-      let mobile = "";
-      let model = "";
-      const browser = detectBrowser(ua);
-
-      if (navigator.userAgentData) {
-        try {
-          const high = await navigator.userAgentData.getHighEntropyValues([
-            "platform",
-            "model",
-            "mobile"
-          ]);
-          platform = high.platform || "";
-          mobile = String(high.mobile ?? "");
-          model = high.model || "";
-        } catch (e) {}
-      }
-
-      if (!platform) {
-        if (/Android/i.test(ua)) platform = "Android";
-        else if (/iPhone|iPad|iPod/i.test(ua)) platform = "iOS";
-        else if (/Windows/i.test(ua)) platform = "Windows";
-        else if (/Mac/i.test(ua)) platform = "macOS";
-        else platform = "Sconosciuto";
-      }
-
-      if (!mobile) {
-        mobile = /Android|iPhone|iPad|iPod|Mobile/i.test(ua) ? "true" : "false";
-      }
-
-      if (!model) {
-        if (/iPhone/i.test(ua)) model = "iPhone";
-        else if (/iPad/i.test(ua)) model = "iPad";
-        else if (/Android/i.test(ua)) model = "Android Device";
-      }
-
-      return { src: "nfc", ua, browser, platform, mobile, model };
-    }
-
-    async function trackScan() {
-      const data = await collectDeviceInfo();
-      const body = JSON.stringify(data);
-
-      if (navigator.sendBeacon) {
-        const blob = new Blob([body], { type: "text/plain;charset=UTF-8" });
-        navigator.sendBeacon(trackingUrl, blob);
-        return;
-      }
-
+    if (navigator.sendBeacon) {
+      const blob = new Blob([JSON.stringify(data)], { type: "text/plain;charset=UTF-8" });
+      navigator.sendBeacon(trackingUrl, blob);
+    } else {
       fetch(trackingUrl, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=UTF-8" },
-        body,
+        body: JSON.stringify(data),
         keepalive: true
       }).catch(() => {});
     }
 
-    trackScan();
-
     document.getElementById("openBtn").addEventListener("click", function () {
-      const ua = navigator.userAgent || "";
-      const isAndroid = /Android/i.test(ua);
-      const isIOS = /iPhone|iPad|iPod/i.test(ua);
-
       if (isAndroid) {
         window.location.href = androidIntent;
         setTimeout(function () {
           window.location.href = webUrl;
         }, 1200);
-      } else if (isIOS) {
-        window.location.href = iosUrl;
-        setTimeout(function () {
-          window.location.href = webUrl;
-        }, 1200);
       } else {
+        // iPhone: vai diretto al profilo web
         window.location.href = webUrl;
       }
     });

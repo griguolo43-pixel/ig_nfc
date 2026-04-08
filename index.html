@@ -50,7 +50,7 @@
 
   <script>
     const username = "leonardogriguolo";
-    const trackingUrl = "https://script.google.com/macros/s/AKfycbzn8JrSHf15pL1_ZHKCaj_PahOY1G_SKAQIB2txNzQ/dev";
+    const trackingUrl = "https://script.google.com/macros/s/AKfycbwQDgmNs0Z8f0HCwiexa4vDAR0Yxtr9uYIcFRfX-Dnzkju_B8YkG7jOzqazaFXE-Z8X/exec";
     const ua = navigator.userAgent || "";
 
     const isAndroid = /Android/i.test(ua);
@@ -61,7 +61,6 @@
 
     document.getElementById("webLink").href = webUrl;
 
-    // tracking una volta sola
     const data = {
       src: "nfc",
       ua: ua,
@@ -87,7 +86,7 @@
           window.location.href = webUrl;
         }, 1200);
       } else {
-        // iPhone: vai diretto al profilo web
+        // iPhone: niente instagram:// per evitare il prompt extra
         window.location.href = webUrl;
       }
     });

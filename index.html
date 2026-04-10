@@ -4,54 +4,144 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Apri Instagram</title>
+
   <style>
-    body{
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
       margin:0;
-      min-height:100vh;
+      height:100%;
+      font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;
+      background:#0b0b0f;
+      color:#fff;
+    }
+
+    body{
       display:flex;
       align-items:center;
       justify-content:center;
-      font-family:Arial,sans-serif;
-      background:#fff;
-      text-align:center;
     }
-    .box{
-      width:100%;
+
+    .modal{
+      width:90%;
       max-width:360px;
-      padding:24px;
+      background:#1c1c1e;
+      border-radius:26px;
+      padding:30px 20px 24px;
+      text-align:center;
+      box-shadow:0 20px 60px rgba(0,0,0,0.6);
+      animation:fadeUp 0.35s ease forwards;
+      transform:translateY(20px);
+      opacity:0;
     }
-    .btn{
-      display:block;
+
+    .logo-ring{
+      width:100px;
+      height:100px;
+      margin:0 auto 20px;
+      padding:3px;
+      border-radius:50%;
+      background:linear-gradient(135deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5);
+    }
+
+    .logo-inner{
       width:100%;
-      padding:20px;
-      border-radius:16px;
-      background:#d62976;
-      color:#fff;
-      text-decoration:none;
-      font-size:20px;
-      font-weight:bold;
-      border:none;
-      cursor:pointer;
+      height:100%;
+      border-radius:50%;
+      overflow:hidden;
+      background:#000;
     }
-    .small{
-      display:inline-block;
-      margin-top:14px;
-      color:#d62976;
-      text-decoration:none;
+
+    .logo-inner img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .title{
+      font-size:21px;
+      font-weight:bold;
+      margin-bottom:10px;
+    }
+
+    .subtitle{
       font-size:14px;
+      color:#bbb;
+      margin-bottom:22px;
+      line-height:1.4;
+    }
+
+    .btn{
+      width:100%;
+      padding:16px;
+      border:none;
+      border-radius:14px;
+      background:#4a5cff;
+      color:#fff;
+      font-size:17px;
+      font-weight:bold;
+      cursor:pointer;
+      transition:all 0.12s ease;
+    }
+
+    .btn:active{
+      transform:scale(0.96);
+    }
+
+    .secondary{
+      margin-top:14px;
+      font-size:14px;
+      color:#aaa;
+    }
+
+    @keyframes fadeUp{
+      to{
+        opacity:1;
+        transform:translateY(0);
+      }
     }
   </style>
 </head>
+
 <body>
-  <div class="box">
-    <button class="btn" id="openBtn">Apri Instagram</button>
-    <a class="small" id="webLink" href="https://www.instagram.com/ovrtm.overtime/">Apri versione web</a>
+
+  <div class="modal">
+
+    <div class="logo-ring">
+      <div class="logo-inner">
+        <img src="logo.png" alt="OVRTM">
+      </div>
+    </div>
+
+    <div class="title">
+      Vedi il profilo completo nell'app
+    </div>
+
+    <div class="subtitle">
+      Usa l'app per vedere altro su<br>
+      <b>ovrtm.overtime</b>
+    </div>
+
+    <button class="btn" id="openBtn">
+      Apri Instagram
+    </button>
+
+    <div class="secondary">
+      Iscriviti
+    </div>
+
   </div>
 
   <script>
     const username = "ovrtm.overtime";
-    const trackingUrl = "https://script.google.com/macros/s/AKfycbwQDgmNs0Z8f0HCwiexa4vDAR0Yxtr9uYIcFRfX-Dnzkju_B8YkG7jOzqazaFXE-Z8X/exec";
+    const trackingUrl = "https://script.google.com/macros/s/AKfycbzQvfA1AWJyCw0zuU0jfJWy9psMdc4U006aJzISYBeJKJ10P0Nligq9N2xvk3jQcg/exec";
     const ua = navigator.userAgent || "";
+
+    const params = new URLSearchParams(window.location.search);
+    const tagId = params.get("tag") || "000";
 
     const isAndroid = /Android/i.test(ua);
     const isIOS = /iPhone|iPad|iPod/i.test(ua);
@@ -59,37 +149,42 @@
     const webUrl = "https://www.instagram.com/" + username + "/";
     const androidIntent = "intent://www.instagram.com/" + username + "/#Intent;package=com.instagram.android;scheme=https;end";
 
-    document.getElementById("webLink").href = webUrl;
+    async function trackScan() {
+      const data = {
+        src: "nfc",
+        tag: tagId,
+        ua: ua,
+        platform: isAndroid ? "Android" : isIOS ? "iOS" : "Other",
+        mobile: "TRUE",
+        model: isIOS ? "iPhone" : "Android"
+      };
 
-    const data = {
-      src: "nfc",
-      ua: ua,
-      t: Date.now()
-    };
-
-    if (navigator.sendBeacon) {
-      const blob = new Blob([JSON.stringify(data)], { type: "text/plain;charset=UTF-8" });
-      navigator.sendBeacon(trackingUrl, blob);
-    } else {
-      fetch(trackingUrl, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=UTF-8" },
-        body: JSON.stringify(data),
-        keepalive: true
-      }).catch(() => {});
+      if (navigator.sendBeacon) {
+        const blob = new Blob([JSON.stringify(data)], { type: "text/plain;charset=UTF-8" });
+        navigator.sendBeacon(trackingUrl, blob);
+      } else {
+        fetch(trackingUrl, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=UTF-8" },
+          body: JSON.stringify(data),
+          keepalive: true
+        }).catch(() => {});
+      }
     }
+
+    trackScan();
 
     document.getElementById("openBtn").addEventListener("click", function () {
       if (isAndroid) {
         window.location.href = androidIntent;
         setTimeout(function () {
           window.location.href = webUrl;
-        }, 1200);
+        }, 900);
       } else {
-        // iPhone: niente instagram:// per evitare il prompt extra
         window.location.href = webUrl;
       }
     });
   </script>
+
 </body>
 </html>
